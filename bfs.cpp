@@ -11,7 +11,7 @@ struct TreeNode {
   TreeNode(int value) : data(value), left(nullptr), right(nullptr) {}
 };
 
-// bfs with using recursion
+// bfs with using while loop
 void bfs(TreeNode* root) {
   if (root == nullptr) {
     return;
