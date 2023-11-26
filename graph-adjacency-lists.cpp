@@ -1,55 +1,105 @@
 #include <iostream>
-#include <vector>
 using namespace std;
 
-// Add the edge where a is where the edge came from and b is the destination
-void addEdge(vector<int> adj[], int a, int b) {
-  adj[a].push_back(b);
-  adj[b].push_back(a);
-}
+class Node {
+ public:
+  int data;
+  Node* next;
+  Node(int value) : data(value), next(nullptr) {}
+};
 
-// Delete the edge
-void deleteEdge(vector<int> adj[], int a, int b) {
-  // Find and remove 'b' from the adjacency list of 'a'
-  auto itA = find(adj[a].begin(), adj[a].end(), b);
-  if (itA != adj[a].end()) {
-    adj[a].erase(itA);
+class LinkedList {
+ public:
+  Node* head;
+
+  // initialize empty linked list
+  LinkedList() : head(nullptr) {}
+
+  void addNode(int value) {
+    Node* newNode = new Node(value);
+    newNode->next = head;
+    head = newNode;
   }
 
-  // Find and remove 'a' from the adjacency list of 'b'
-  auto itB = find(adj[b].begin(), adj[b].end(), a);
-  if (itB != adj[b].end()) {
-    adj[b].erase(itB);
-  }
-}
+  void deleteNode(int value) {
+    Node* temp = head;
+    Node* prev = nullptr;
 
-// Draw the graph
-void drawGraph(vector<int> adj[], int numVertices) {
-  for (int a = 0; a < numVertices; ++a) {
-    char vertexLabel = 'A' + a;  // Convert index to character
-    cout << "\n " << vertexLabel;
-    for (auto x : adj[a]) {
-      char neighborLabel = 'A' + x;  // Convert index to character
-      cout << " to " << neighborLabel;
+    if (temp != nullptr && temp->data == value) {
+      head = temp->next;
+      delete temp;
+      return;
     }
-    printf("\n");
+
+    // search for node to be deleted, keeping track of previous node
+    while (temp != nullptr && temp->data != value) {
+      prev = temp;
+      temp = temp->next;
+    }
+
+    if (temp == nullptr) return;
+
+    // unlink the node from linked list
+    prev->next = temp->next;
+    delete temp;
   }
-}
+};
+
+class Graph {
+ private:
+  int numVertices;
+  LinkedList* adjListArray;
+
+ public:
+  // initialize graph with a given number of vertices
+  Graph(int vertices) : numVertices(vertices) {
+    adjListArray = new LinkedList[numVertices];
+  }
+
+  // add an edge between two vertices in the graph
+  void addEdge(int src, int dest) {
+    adjListArray[src].addNode(dest);
+    adjListArray[dest].addNode(src);
+  }
+
+  // delete an edge between two vertices in the graph
+  void deleteEdge(int src, int dest) {
+    adjListArray[src].deleteNode(dest);
+    adjListArray[dest].deleteNode(src);
+  }
+
+  // print adjacency list representation of graph
+  void drawGraph() {
+    for (int v = 1; v < numVertices; ++v) {
+      cout << "\n " << v;
+
+      Node* current = adjListArray[v].head;
+      while (current != nullptr) {
+        cout << " to " << current->data;
+        current = current->next;
+      }
+
+      cout << endl;
+    }
+  }
+};
 
 int main() {
-  int numVertices = 5;
-  vector<int> adj[numVertices];
+  Graph graph(5);
 
-  addEdge(adj, 0, 1);
-  addEdge(adj, 0, 2);
-  addEdge(adj, 0, 3);
-  addEdge(adj, 1, 2);
-  addEdge(adj, 4, 3);
-  cout << "initial graph: \n";
-  drawGraph(adj, numVertices);
-  cout << "final deleted graph: \n";
-  deleteEdge(adj, 0, 1);
-  drawGraph(adj, numVertices);
+  graph.addEdge(1, 5);
+  graph.addEdge(1, 3);
+  graph.addEdge(2, 4);
+  graph.addEdge(1, 4);
+  graph.addEdge(2, 3);
+  graph.addEdge(3, 4);
+
+  cout << "Initial Graph:\n";
+  graph.drawGraph();
+
+  cout << "\nDeleting edge between 0 and 1:\n";
+  graph.deleteEdge(3, 4);
+  graph.drawGraph();
 
   return 0;
 }
